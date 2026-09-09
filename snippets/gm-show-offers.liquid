@@ -1,0 +1,391 @@
+{% comment %}
+
+---------------------------------------------------------
+Copyright © 2025 Genius Maker. All rights reserved.
+Unauthorized copying, modification, distribution, or use
+of this code or any portion of it, is strictly prohibited.
+Violators will be prosecuted to the fullest extent of the law.
+For inquiries or permissions, contact +91 9672 366 086
+---------------------------------------------------------
+
+  Renders gm show offer block on product pages
+
+  Accepts:
+  - block: {Object} passes in the block information.
+
+
+  Usage:
+  {% render 'gm-show-offers',
+    block: block
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign show_first_offer = block.settings.show_first_offer
+  assign show_second_offer = block.settings.show_second_offer
+  assign show_third_offer = block.settings.show_third_offer
+  assign show_fourth_offer = block.settings.show_fourth_offer
+-%}
+<style>
+  .offer-display-content label.offer-label{
+    background: {{ block.settings.gm_offer_bg }};
+    border: 1px dashed {{ block.settings.gm_offer_border_color }};
+  }
+  .offer-display-content label span.get-offer-btn {
+    background-color: {{ block.settings.offer_button_bg }}; 
+    color: {{ block.settings.offer_button_text }}; 
+  }
+
+  .genius-maker-offer-info-container {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .offer-display-content {
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .offer-display-content label {
+    flex: 1 1 80%;
+    min-width: 80%;
+  }
+
+  .offer-display-content label.offer-label {
+    padding-inline: 2rem;
+    padding-block: 1.2rem;
+  }
+
+  .offer-display-content label h4.offer-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+    margin-top: 0.5rem;
+  }
+
+  .offer-display-content label.offer-label p {
+    font-size: 1.6rem;
+    line-height: 1.4;
+  }
+
+  .offer-display-content label span.get-offer-btn {
+    display: block;
+    width: fit-content;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 1.4rem;
+    border-radius: 6px;
+  }
+
+  .genius-maker-offer-info-container .offer-display-content input {
+    display: none;
+  }
+
+  .first-offer-info,
+  .second-offer-info,
+  .third-offer-info,
+  .fourth-offer-info {
+    visibility: hidden;
+    touch-action: none;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    background-color: #1e1e1e; 
+    color: #fafafa;
+    padding-inline: 2rem;
+    padding-block: 3rem;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    transform: translateX(120%);
+  }
+
+  h4.offer-info-title--gm {
+    color: #fafafa;
+  }
+
+  .first-offer-info img,
+  .second-offer-info img,
+  .third-offer-info img,
+  .fourth-offer-info img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+
+  p.offer-info-slide-content--gm {
+    font-size: 1.6rem;
+  }
+
+  .close-offer-info-gm {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    outline: none;
+  }
+
+  #discount-code-container--gm {
+    width: 100%;
+    height: auto;
+    background-color: #FFCF50;
+    color: #1e1e1e;
+    border-radius: 6px;
+    position: relative;
+    padding-block: 1rem;
+    margin-top: 1rem;
+  }
+
+  #discount-code-content--gm {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: 5px;
+    padding-inline: 20px;
+  }
+
+  #discount-code--gm {
+    display: none;
+  }
+
+  #get-off-text--gm {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1e1e1e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  #copy-button--gm {
+    border: none;
+    padding-block: 0.7rem;
+    padding-inline: 0.9rem;
+    background-color: #1e1e1e;
+    color: #fafafa;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  #success-msg--gm {
+    visibility: hidden;
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    margin: 0;
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #fafafa;
+    padding-inline: 1rem;
+    padding-block: 0.5rem;
+    text-align: center;
+    transition: all 500ms ease-in-out;
+  }
+
+  @media screen and (max-width: 750px) {
+    .offer-display-content::-webkit-scrollbar {
+      display: none;
+    }
+    .offer-display-content {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .offer-display-content label h4.offer-title {
+      font-size: 1.5rem;
+    }
+    .offer-display-content label.offer-label p {
+      font-size: 1.2rem;
+    }
+    .offer-display-content label span.get-offer-btn {
+      font-size: 1rem;
+      padding: 0.7rem;
+    }
+    p.offer-info-slide-content--gm {
+      font-size: 1.4rem;
+    }
+    #discount-code-container--gm {
+      padding-block: 0.2rem;
+    }
+  }
+</style>
+
+<p style="text-transform: uppercase; font-weight: 500; font-size: 1.5rem;">{{ block.settings.main_title }}</p>
+<div class="genius-maker-offer-info-container" aria-label="namaste silver offer information">
+  <div class="offer-display-content">
+    <!-- Offer 1 -->
+    {% if show_first_offer %}
+      <input type="radio" name="offer-info-gm" id="first-offer">
+      <label for="first-offer" class="offer-label" aria-label="{{ block.settings.first_offer_information }}">
+        <div>
+          <h4 class="offer-title">{{ block.settings.first_offer_title }}</h4>
+          <p>{{ block.settings.first_offer_information }}
+            <span class="get-offer-btn">{{ block.settings.first_offer_button }}</span>
+          </p>
+        </div>
+      </label>
+    {% endif %}
+
+    <!-- Offer 2 -->
+    {% if show_second_offer %}
+      <input type="radio" name="offer-info-gm" id="second-offer">
+      <label for="second-offer" class="offer-label" aria-label="{{ block.settings.second_offer_information }}">
+        <div>
+          <h4 class="offer-title">{{ block.settings.second_offer_title }}</h4>
+          <p>{{ block.settings.second_offer_information }}
+            <span class="get-offer-btn">{{ block.settings.second_offer_button }}</span>
+          </p>
+        </div>
+      </label>
+    {% endif %}
+
+    <!-- Offer 3 -->
+    {% if show_third_offer %}
+      <input type="radio" name="offer-info-gm" id="third-offer">
+      <label for="third-offer" class="offer-label" aria-label="{{ block.settings.third_offer_information }}">
+        <div>
+          <h4 class="offer-title">{{ block.settings.third_offer_title }}</h4>
+          <p>
+            {{ block.settings.third_offer_information }}
+            <span class="get-offer-btn">{{ block.settings.third_offer_button }}</span>
+          </p>
+        </div>
+      </label>
+    {% endif %}
+
+     <!-- Offer 4 -->
+    {% if show_fourth_offer %}
+      <input type="radio" name="offer-info-gm" id="fourth-offer">
+      <label for="fourth-offer" class="offer-label" aria-label="{{ block.settings.fourth_offer_information }}">
+        <div>
+          <h4 class="offer-title">{{ block.settings.fourth_offer_title }}</h4>
+          <p>
+            {{ block.settings.fourth_offer_information }}
+            <span class="get-offer-btn">{{ block.settings.fourth_offer_button }}</span>
+          </p>
+        </div>
+      </label>
+    {% endif %}
+
+
+  <!-- Offer 1 Info Hidden-->
+    <div class="first-offer-info">
+      <label for="none-offer-info-gm" class="close-offer-info-gm" aria-label="close button icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+        </svg>
+      </label>
+      <h4 class="offer-info-title--gm">Offer Info</h4>
+        {{ block.settings.first_offer_image | image_url: width: 512, height: 512 | image_tag }}
+        <p class="offer-info-slide-content--gm">{{ block.settings.first_offer_info_hidden }}</p>
+      <div id="discount-code-container--gm">
+        <div id="discount-code-content--gm">
+          <p id="get-off-text--gm">{{ block.settings.first_offer_discount_info }}</p>
+          <button id="copy-button--gm" aria-label="Copy discount code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-svg-icon" viewBox="0 0 16 16" >
+              <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" />
+            </svg>
+            {{ "Copy Code" }}
+          </button>
+        </div>
+        <p id="discount-code--gm">{{ block.settings.first_offer_disocunt_code }}</p>
+        <p id="success-msg--gm">{{ block.settings.first_offer_code_copied }}</p>
+      </div>
+    </div>
+<!-- Offer 1 Info Hidden-->
+
+  <!-- Offer 2 Info Hidden-->
+    <div class="second-offer-info">
+      <label for="none-offer-info-gm" class="close-offer-info-gm" aria-label="close button icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+        </svg>
+      </label>
+      <h4 class="offer-info-title--gm">Offer Info</h4>
+        {{ block.settings.second_offer_image | image_url: width: 512, height: 512 | image_tag }}
+      <p class="offer-info-slide-content--gm">{{ block.settings.second_offer_info_hidden }}</p>
+      <div id="discount-code-container--gm">
+        <div id="discount-code-content--gm">
+          <p id="get-off-text--gm">{{ block.settings.second_offer_discount_info }}</p>
+          <button id="copy-button--gm" aria-label="Copy discount code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-svg-icon" viewBox="0 0 16 16" >
+              <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" />
+            </svg>
+            {{ "Copy Code" }}
+          </button>
+        </div>
+        <p id="discount-code--gm">{{ block.settings.second_offer_disocunt_code }}</p>
+        <p id="success-msg--gm">{{ block.settings.first_offer_code_copied }}</p>
+      </div>
+    </div>
+<!-- Offer 2 Info Hidden-->
+                
+<!-- Offer 3 Info Hidden-->
+    <div class="third-offer-info">
+      <label for="none-offer-info-gm" class="close-offer-info-gm" aria-label="close button icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+        </svg>
+      </label>
+      <h4 class="offer-info-title--gm">{{ "Offer Info" }}</h4>
+       {{ block.settings.third_offer_image | image_url: width: 512, height: 512 | image_tag }}
+      <p class="offer-info-slide-content--gm">{{ block.settings.third_offer_info_hidden }}</p>
+      <div id="discount-code-container--gm">
+        <div id="discount-code-content--gm">
+          <p id="get-off-text--gm">{{ block.settings.third_offer_discount_info }}</p>
+          <button id="copy-button--gm" aria-label="Copy discount code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-svg-icon" viewBox="0 0 16 16" >
+              <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" />
+            </svg>
+            {{ "Copy Code" }}
+          </button>
+        </div>
+        <p id="discount-code--gm">{{ block.settings.third_offer_disocunt_code }}</p>
+        <p id="success-msg--gm">{{ block.settings.first_offer_code_copied }}</p>
+      </div>
+    </div>
+  <!-- Offer 3 Info Hidden-->
+
+  <!-- Offer 4 Info Hidden-->
+    <div class="fourth-offer-info">
+      <label for="none-offer-info-gm" class="close-offer-info-gm" aria-label="close button icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+        </svg>
+      </label>
+      <h4 class="offer-info-title--gm">{{ "Offer Info" }}</h4>
+       {{ block.settings.fourth_offer_image | image_url: width: 512, height: 512 | image_tag }}
+      <p class="offer-info-slide-content--gm">{{ block.settings.fourth_offer_info_hidden }}</p>
+      <div id="discount-code-container--gm">
+        <div id="discount-code-content--gm">
+          <p id="get-off-text--gm">{{ block.settings.fourth_offer_discount_info }}</p>
+          <button id="copy-button--gm" aria-label="Copy discount code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-svg-icon" viewBox="0 0 16 16" >
+              <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z" />
+            </svg>
+            {{ "Copy Code" }}
+          </button>
+        </div>
+        <p id="discount-code--gm">{{ block.settings.fourth_offer_disocunt_code }}</p>
+        <p id="success-msg--gm">{{ block.settings.first_offer_code_copied }}</p>
+      </div>
+    </div>
+  <!-- Offer 4 Info Hidden-->
+
+    <!-- Now, add a default hidden radio button to allow closing the info -->
+    <input type="radio" name="offer-info-gm" id="none-offer-info-gm" checked>
+  </div>
+</div>
