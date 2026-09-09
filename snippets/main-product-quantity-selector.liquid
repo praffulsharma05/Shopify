@@ -43,6 +43,20 @@
     assign inventory_quantity = variant.inventory_quantity
     assign inventory_management = variant.inventory_management
     
+    assign max_qty = variant.quantity_rule.max
+    if inventory_management == 'shopify' and variant.inventory_policy == 'deny'
+      if max_qty != null
+        if inventory_quantity < max_qty
+          assign max_qty = inventory_quantity
+        endif
+      else
+        assign max_qty = inventory_quantity
+      endif
+      if max_qty < 0
+        assign max_qty = 0
+      endif
+    endif
+
     assign inventory_text = blank
     assign inventory_color = 'inherit'
     
@@ -89,9 +103,10 @@
         data-cart-quantity="{{ cart_qty }}"
         data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
         min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-        {% assign item_max = product.selected_or_first_available_variant.quantity_rule.max | default: 5 | at_most: 5 %}
-        data-max="{{ item_max }}"
-        max="{{ item_max }}"
+        {%- if max_qty != null -%}
+          data-max="{{ max_qty }}"
+          max="{{ max_qty }}"
+        {%- endif -%}
         step="{{ product.selected_or_first_available_variant.quantity_rule.increment }}"
         value="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
         form="{{ product_form_id }}"

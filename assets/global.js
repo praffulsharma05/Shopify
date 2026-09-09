@@ -228,10 +228,6 @@ class QuantityInput extends HTMLElement {
   quantityUpdateUnsubscriber = undefined;
 
   connectedCallback() {
-    if (!this.input.hasAttribute('max') || parseInt(this.input.getAttribute('max')) > 5) {
-      this.input.setAttribute('max', '5');
-      this.input.dataset.max = '5';
-    }
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
   }
@@ -243,9 +239,8 @@ class QuantityInput extends HTMLElement {
   }
 
   onInputChange(event) {
-    const max = this.input.max ? Math.min(parseInt(this.input.max), 5) : 5;
-    if (parseInt(this.input.value) > max) {
-      this.input.value = max;
+    if (this.input.max && parseInt(this.input.value) > parseInt(this.input.max)) {
+      this.input.value = this.input.max;
     }
     this.validateQtyRules();
   }
@@ -253,10 +248,9 @@ class QuantityInput extends HTMLElement {
   onButtonClick(event) {
     event.preventDefault();
     const previousValue = this.input.value;
-    const max = this.input.max ? Math.min(parseInt(this.input.max), 5) : 5;
 
     if (event.currentTarget.name === 'plus' || event.target.name === 'plus' || event.currentTarget.querySelector("[name='plus']")) {
-      if (parseInt(this.input.value) >= max) {
+      if (this.input.max && parseInt(this.input.value) >= parseInt(this.input.max)) {
         return;
       }
       if (parseInt(this.input.dataset.min) > parseInt(this.input.step) && this.input.value == 0) {
@@ -277,13 +271,17 @@ class QuantityInput extends HTMLElement {
 
   validateQtyRules() {
     const value = parseInt(this.input.value);
-    const max = this.input.max ? Math.min(parseInt(this.input.max), 5) : 5;
     if (this.input.min) {
       const buttonMinus = this.querySelector(".quantity__button[name='minus']");
       if (buttonMinus) buttonMinus.classList.toggle('disabled', parseInt(value) <= parseInt(this.input.min));
     }
-    const buttonPlus = this.querySelector(".quantity__button[name='plus']");
-    if (buttonPlus) buttonPlus.classList.toggle('disabled', value >= max);
+    if (this.input.max) {
+      const buttonPlus = this.querySelector(".quantity__button[name='plus']");
+      if (buttonPlus) buttonPlus.classList.toggle('disabled', parseInt(value) >= parseInt(this.input.max));
+    } else {
+      const buttonPlus = this.querySelector(".quantity__button[name='plus']");
+      if (buttonPlus) buttonPlus.classList.remove('disabled');
+    }
   }
 }
 

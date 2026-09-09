@@ -17,6 +17,21 @@
     </span>
     <span class="svg-wrapper">{{ 'icon-minus.svg' | inline_asset_content }}</span>
   </button>
+  {%- liquid
+    assign max_qty = variant.quantity_rule.max
+    if variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny'
+      if max_qty != null
+        if variant.inventory_quantity < max_qty
+          assign max_qty = variant.inventory_quantity
+        endif
+      else
+        assign max_qty = variant.inventory_quantity
+      endif
+      if max_qty < 0
+        assign max_qty = 0
+      endif
+    endif
+  -%}
   <input
     class="quantity__input"
     data-quantity-variant-id="{{ variant.id }}"
@@ -27,9 +42,10 @@
     data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}"
     min="{{ min }}"
     data-min="{{ variant.quantity_rule.min }}"
-    {% assign item_max = variant.quantity_rule.max | default: 5 | at_most: 5 %}
-    max="{{ item_max }}"
-    data-max="{{ item_max }}"
+    {%- if max_qty != null -%}
+      max="{{ max_qty }}"
+      data-max="{{ max_qty }}"
+    {%- endif -%}
     step="{{ variant.quantity_rule.increment }}"
     {% # theme-check-enable %}
     aria-label="{{ 'products.product.quantity.input_label' | t: product: variant.title | escape }}"

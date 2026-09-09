@@ -80,12 +80,12 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
   validateQuantity(event) {
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
-    const maxLimit = event.target.max ? Math.min(parseInt(event.target.max), 5) : 5;
+    const maxLimit = event.target.max ? parseInt(event.target.max) : null;
     let message = '';
 
     if (inputValue < event.target.dataset.min) {
       message = window.quickOrderListStrings?.min_error?.replace('[min]', event.target.dataset.min) || 'Minimum quantity error';
-    } else if (inputValue > maxLimit) {
+    } else if (maxLimit !== null && inputValue > maxLimit) {
       message = `Maximum quantity allowed per item is ${maxLimit}`;
     } else if (inputValue % parseInt(event.target.step || 1) !== 0) {
       message = window.quickOrderListStrings?.step_error?.replace('[step]', event.target.step) || 'Invalid quantity step';

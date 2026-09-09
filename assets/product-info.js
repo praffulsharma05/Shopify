@@ -335,18 +335,22 @@ if (!customElements.get('product-info')) {
         };
 
         let min = data.min;
-        const max = data.max === null ? data.max : data.max - data.cartQuantity;
+        const max = data.max === null ? data.max : Math.max(0, data.max - data.cartQuantity);
         if (max !== null) min = Math.min(min, max);
         if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
 
         this.quantityInput.min = min;
 
-        if (max) {
+        if (max !== null) {
           this.quantityInput.max = max;
         } else {
           this.quantityInput.removeAttribute('max');
         }
-        this.quantityInput.value = min;
+        if (parseInt(this.quantityInput.value) < min) {
+          this.quantityInput.value = min;
+        } else if (max !== null && parseInt(this.quantityInput.value) > max) {
+          this.quantityInput.value = Math.max(min, max);
+        }
 
         publish(PUB_SUB_EVENTS.quantityUpdate, undefined);
       }

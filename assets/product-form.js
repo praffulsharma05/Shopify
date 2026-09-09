@@ -22,6 +22,25 @@ if (!customElements.get('product-form')) {
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
+        this.error = false;
+
+        const quantityInput = this.form.querySelector('input[name="quantity"]') || this.querySelector('.quantity__input');
+        if (quantityInput) {
+          const requestedQty = parseInt(quantityInput.value) || 1;
+          const maxAttr = quantityInput.getAttribute('max');
+          const maxAllowed = maxAttr !== null && maxAttr !== '' ? parseInt(maxAttr) : null;
+
+          if (maxAllowed !== null && !isNaN(maxAllowed)) {
+            if (maxAllowed <= 0) {
+              this.handleErrorMessage('All available stock for this item is already in your cart.');
+              return;
+            }
+            if (requestedQty > maxAllowed) {
+              this.handleErrorMessage(`You can only add up to ${maxAllowed} of this item to your cart.`);
+              return;
+            }
+          }
+        }
 
         this.submitButton.setAttribute('aria-disabled', true);
         this.submitButton.classList.add('loading');
@@ -44,100 +63,70 @@ if (!customElements.get('product-form')) {
 
         const variantId = formData.get('id');
         const quantity = parseInt(formData.get('quantity')) || 1;
-        const MAX_ALLOWED = 5;
 
-        const checkCartPromise = typeof CartItems !== 'undefined' && CartItems.fetchCartData
-          ? CartItems.fetchCartData()
-          : fetch(`${routes.cart_url}.json`).then((res) => res.json()).catch(() => null);
+        const linesUpdateDeferred = this.createCartLinesUpdateEvent(variantId, quantity);
 
-        checkCartPromise
-          .then((cartData) => {
-            let currentCartQty = 0;
-            if (cartData && cartData.items) {
-              const existingItem = cartData.items.find((item) => item.id == variantId || item.variant_id == variantId);
-              if (existingItem) {
-                currentCartQty = existingItem.quantity;
-              }
-            }
-
-            if (currentCartQty + quantity > MAX_ALLOWED) {
-              const remainingAllowed = MAX_ALLOWED - currentCartQty;
-              let errorMsg = '';
-              if (remainingAllowed <= 0) {
-                errorMsg = `You already have ${currentCartQty} unit(s) of this item in your cart. Maximum limit allowed is ${MAX_ALLOWED} of the same item.`;
-              } else {
-                errorMsg = `You already have ${currentCartQty} unit(s) of this item in your cart. You can only add up to ${remainingAllowed} more (maximum ${MAX_ALLOWED} allowed).`;
-              }
-
-              this.handleErrorMessage(errorMsg);
-              this.dispatchCartErrorEvent(errorMsg, 'INVALID');
-              return Promise.reject({ isValidationError: true });
-            }
-
-            const linesUpdateDeferred = this.createCartLinesUpdateEvent(variantId, quantity);
-
-            return fetch(`${routes.cart_add_url}`, config)
-              .then((response) => response.json())
-              .then((response) => {
-                if (response.status) {
-                  publish(PUB_SUB_EVENTS.cartError, {
-                    source: 'product-form',
-                    productVariantId: variantId,
-                    errors: response.errors || response.description,
-                    message: response.message,
-                  });
-                  this.handleErrorMessage(response.description);
-                  this.dispatchCartErrorEvent(response.description || response.message, 'INVALID');
-                  linesUpdateDeferred?.reject(new Error(response.description || response.message));
-
-                  const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
-                  if (!soldOutMessage) return;
-                  this.submitButton.setAttribute('aria-disabled', true);
-                  this.submitButtonText.classList.add('hidden');
-                  soldOutMessage.classList.remove('hidden');
-                  this.error = true;
-                  return;
-                } else if (!this.cart) {
-                  this.resolveCartLinesUpdate(linesUpdateDeferred);
-                  window.location = window.routes.cart_url;
-                  return;
-                }
-
-                this.resolveCartLinesUpdate(linesUpdateDeferred);
-
-                const startMarker = CartPerformance.createStartingMarker('add:wait-for-subscribers');
-                if (!this.error)
-                  publish(PUB_SUB_EVENTS.cartUpdate, {
-                    source: 'product-form',
-                    productVariantId: variantId,
-                    cartData: response,
-                  }).then(() => {
-                    CartPerformance.measureFromMarker('add:wait-for-subscribers', startMarker);
-                  });
-                this.error = false;
-                const quickAddModal = this.closest('quick-add-modal');
-                if (quickAddModal) {
-                  document.body.addEventListener(
-                    'modalClosed',
-                    () => {
-                      setTimeout(() => {
-                        CartPerformance.measure("add:paint-updated-sections", () => {
-                          this.cart.renderContents(response);
-                        });
-                      });
-                    },
-                    { once: true }
-                  );
-                  quickAddModal.hide(true);
-                } else {
-                  CartPerformance.measure("add:paint-updated-sections", () => {
-                    this.cart.renderContents(response);
-                  });
-                }
+        fetch(`${routes.cart_add_url}`, config)
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.status) {
+              publish(PUB_SUB_EVENTS.cartError, {
+                source: 'product-form',
+                productVariantId: variantId,
+                errors: response.errors || response.description,
+                message: response.message,
               });
+              this.handleErrorMessage(response.description || response.message);
+              this.dispatchCartErrorEvent(response.description || response.message, 'INVALID');
+              linesUpdateDeferred?.reject(new Error(response.description || response.message));
+
+              const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
+              if (soldOutMessage && response.description && response.description.toLowerCase().includes('sold out')) {
+                this.submitButton.setAttribute('aria-disabled', true);
+                this.submitButtonText.classList.add('hidden');
+                soldOutMessage.classList.remove('hidden');
+                this.error = true;
+              }
+              return;
+            } else if (!this.cart) {
+              this.resolveCartLinesUpdate(linesUpdateDeferred);
+              window.location = window.routes.cart_url;
+              return;
+            }
+
+            this.resolveCartLinesUpdate(linesUpdateDeferred);
+
+            const startMarker = CartPerformance.createStartingMarker('add:wait-for-subscribers');
+            if (!this.error)
+              publish(PUB_SUB_EVENTS.cartUpdate, {
+                source: 'product-form',
+                productVariantId: variantId,
+                cartData: response,
+              }).then(() => {
+                CartPerformance.measureFromMarker('add:wait-for-subscribers', startMarker);
+              });
+            this.error = false;
+            const quickAddModal = this.closest('quick-add-modal');
+            if (quickAddModal) {
+              document.body.addEventListener(
+                'modalClosed',
+                () => {
+                  setTimeout(() => {
+                    CartPerformance.measure("add:paint-updated-sections", () => {
+                      this.cart.renderContents(response);
+                    });
+                  });
+                },
+                { once: true }
+              );
+              quickAddModal.hide(true);
+            } else {
+              CartPerformance.measure("add:paint-updated-sections", () => {
+                this.cart.renderContents(response);
+              });
+            }
           })
           .catch((e) => {
-            if (e && e.isValidationError) return;
             console.error(e);
             this.dispatchCartErrorEvent(e.message || 'Network error', 'SERVICE_UNAVAILABLE');
           })
