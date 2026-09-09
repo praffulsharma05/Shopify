@@ -15,6 +15,22 @@
 {%- endstyle -%}
 
 <div class="customer account section-{{ section.id }}-padding">
+  <div style="margin-bottom: 2rem;">
+    <a
+      href="{{ routes.root_url }}"
+      onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1){ history.back(); return false; }"
+      class="button button--secondary account-back-btn"
+      style="display: inline-flex; align-items: center; gap: 8px; padding: 0.8rem 1.6rem; border-radius: 50px; font-weight: 600; text-decoration: none; font-size: 1.3rem; border: 1px solid rgba(46, 42, 57, 0.2); background: #ffffff; color: #2e2a39; transition: all 0.2s ease;"
+      onmouseover="this.style.background='#9b046f'; this.style.color='#ffffff'; this.style.borderColor='#9b046f';"
+      onmouseout="this.style.background='#ffffff'; this.style.color='#2e2a39'; this.style.borderColor='rgba(46, 42, 57, 0.2)';"
+    >
+      <span class="svg-wrapper" style="transform: rotate(180deg); width: 1.4rem; height: 1.4rem; display: inline-flex; align-items: center;">
+        {{- 'icon-arrow.svg' | inline_asset_content -}}
+      </span>
+      <span>Back</span>
+    </a>
+  </div>
+
   <div>
     <h1 class="customer__title">{{ 'customer.account.title' | t }}</h1>
     <a href="{{ routes.account_logout_url }}">
