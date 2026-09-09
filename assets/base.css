@@ -2381,10 +2381,14 @@ input[type='checkbox'] {
   box-sizing: border-box !important;
 }
 
-.shopify-section-group-header-group,
+.shopify-section-group-header-group {
+  z-index: 100 !important;
+  position: relative !important;
+}
+
 .shopify-section.section-header,
 .section-header {
-  z-index: 100 !important;
+  z-index: 1005 !important;
   position: relative !important;
 }
 
@@ -2396,7 +2400,7 @@ input[type='checkbox'] {
 .header-wrapper {
   display: block;
   position: relative;
-  z-index: 100 !important;
+  z-index: 1005 !important;
   background-color: rgb(var(--color-background));
 }
 

@@ -149,6 +149,7 @@
 
   .header-wrapper {
     position: relative;
+    z-index: 1005 !important;
   }
 </style>
 
@@ -159,6 +160,7 @@
 
   .section-header {
     position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
+    z-index: 1005 !important;
     margin-bottom: {{ section.settings.margin_bottom | times: 0.75 | round: 0 }}px;
   }
 
