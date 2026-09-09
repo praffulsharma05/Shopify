@@ -68,91 +68,97 @@
 
 {%- unless skip_card -%}
 
-<div class="card-wrapper animate-arrow {% if wrapper_class and wrapper_class != 'none' %}{{ wrapper_class }}{% else %}collection-card-wrapper{% endif %}" style="border-radius: 16px; overflow: visible;">
-  <div
-    class="
-      card
-      card--{{ card_style }}
-      card--media
-      {% if card_style == 'card' %} color-{{ card_color_scheme }} gradient{% endif %}
-      {% if extend_height %} card--extend-height{% endif %}
-    "
-    style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%; border-radius: 16px; overflow: hidden;"
+<div class="card-wrapper animate-arrow {% if wrapper_class and wrapper_class != 'none' %}{{ wrapper_class }}{% else %}collection-card-wrapper{% endif %}" style="border-radius: 16px; overflow: hidden; position: relative;">
+  <a
+    {% if card_collection == blank %}
+      role="link" aria-disabled="true"
+    {% else %}
+      href="{{ card_collection.url }}"
+    {% endif %}
+    class="card-collection-clickable-wrapper"
+    style="text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%; width: 100%; cursor: pointer;"
+    aria-label="{{ card_collection.title | default: 'Collection' | escape }}"
   >
     <div
-      class="card__inner ratio {% if card_style == 'standard' %}color-{{ card_color_scheme }} gradient{% endif %}"
-      style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%; border-radius: 16px 16px 0 0; overflow: hidden;"
+      class="
+        card
+        card--{{ card_style }}
+        card--media
+        {% if card_style == 'card' %} color-{{ card_color_scheme }} gradient{% endif %}
+        {% if extend_height %} card--extend-height{% endif %}
+      "
+      style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%; border-radius: 16px; overflow: hidden; flex: 1 1 auto;"
     >
-      <div class="card__media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-        <div class="media media--transparent media--hover-effect" style="width: 100%; height: 100%; position: relative;">
-          <img
-            src="{{ card_img_src }}"
-            onerror="this.onerror=null; this.src='{{ fallback_coll_img }}';"
-            sizes="
-              (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: columns }}px,
-              (min-width: 750px) {% if columns > 1 %}calc((100vw - 10rem) / 2){% else %}calc(100vw - 10rem){% endif %},
-              calc(100vw - 3rem)
-            "
-            alt="{{ card_collection.title | escape }}"
-            width="{{ collection_image.width | default: 500 }}"
-            height="{{ collection_image.height | default: 500 }}"
-            loading="lazy"
-            decoding="async"
-            class="motion-reduce"
-            style="width: 100%; height: 100%; object-fit: cover; display: block;"
-          >
-        </div>
-      </div>
-    </div>
-    {%- if card_collection != blank or collection_image -%}
-      <div class="card__content" style="padding: 1.2rem 0.8rem 1.4rem; text-align: center; overflow: visible;">
-        <div class="card__information" style="text-align: center; width: 100%; overflow: visible;">
-          <h3 class="card__heading" style="color: #2e2a39; font-size: 1.8rem; font-weight: 600; text-align: center; line-height: 1.35; margin: 0; overflow: visible;">
-            <a
-              {% if card_collection == blank %}
-                role="link" aria-disabled="true"
-              {% else %}
-                href="{{ card_collection.url }}"
-              {% endif %}
-              class="full-unstyled-link"
-              style="color: #2e2a39; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; line-height: 1.35; overflow: visible; flex-wrap: wrap;"
+      <div
+        class="card__inner ratio {% if card_style == 'standard' %}color-{{ card_color_scheme }} gradient{% endif %}"
+        style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%; border-radius: 16px 16px 0 0; overflow: hidden;"
+      >
+        <div class="card__media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+          <div class="media media--transparent media--hover-effect" style="width: 100%; height: 100%; position: relative;">
+            <img
+              src="{{ card_img_src }}"
+              onerror="this.onerror=null; this.src='{{ fallback_coll_img }}';"
+              sizes="
+                (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: columns }}px,
+                (min-width: 750px) {% if columns > 1 %}calc((100vw - 10rem) / 2){% else %}calc(100vw - 10rem){% endif %},
+                calc(100vw - 3rem)
+              "
+              alt="{{ card_collection.title | escape }}"
+              width="{{ collection_image.width | default: 500 }}"
+              height="{{ collection_image.height | default: 500 }}"
+              loading="lazy"
+              decoding="async"
+              class="motion-reduce"
+              style="width: 100%; height: 100%; object-fit: cover; display: block;"
             >
-              {%- if card_collection.title != blank -%}
-                {{- card_collection.title | escape -}}
-              {%- else -%}
+          </div>
+        </div>
+      </div>
+      {%- if card_collection != blank or collection_image -%}
+        <div class="card__content" style="padding: 1.2rem 0.8rem 1.4rem; text-align: center; overflow: visible;">
+          <div class="card__information" style="text-align: center; width: 100%; overflow: visible;">
+            <h3 class="card__heading" style="color: #2e2a39; font-size: 1.8rem; font-weight: 600; text-align: center; line-height: 1.35; margin: 0; overflow: visible;">
+              <span
+                class="full-unstyled-link"
+                style="color: #2e2a39; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; line-height: 1.35; overflow: visible; flex-wrap: wrap;"
+              >
+                {%- if card_collection.title != blank -%}
+                  {{- card_collection.title | escape -}}
+                {%- else -%}
+                  {{ 'onboarding.collection_title' | t }}
+                {%- endif -%}
+                <span class="icon-wrap" style="display: inline-block; vertical-align: middle; margin-left: 6px;">
+                  {{- 'icon-arrow.svg' | inline_asset_content -}}
+                </span>
+              </span>
+            </h3>
+            {%- if collection_image == null and card_collection.description != blank -%}
+              <p class="card__caption" style="color: rgba(46, 42, 57, 0.75); text-align: center;">
+                {{- card_collection.description | strip_html | truncatewords: 12 -}}
+                <span class="icon-wrap">
+                  {{- 'icon-arrow.svg' | inline_asset_content -}}
+                </span>
+              </p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+      {%- if card_collection == blank -%}
+        <div class="card__content" style="text-align: center;">
+          <div class="card__information" style="text-align: center;">
+            <h3 class="card__heading card__heading--placeholder" style="text-align: center;">
+              <span class="full-unstyled-link" style="display: inline-flex; align-items: center; justify-content: center;">
                 {{ 'onboarding.collection_title' | t }}
-              {%- endif -%}
-              <span class="icon-wrap" style="display: inline-block; vertical-align: middle; margin-left: 6px;">
-                {{- 'icon-arrow.svg' | inline_asset_content -}}
+                <span class="icon-wrap" style="margin-left: 6px;">
+                  {{- 'icon-arrow.svg' | inline_asset_content -}}
+                </span>
               </span>
-            </a>
-          </h3>
-          {%- if collection_image == null and card_collection.description != blank -%}
-            <p class="card__caption" style="color: rgba(46, 42, 57, 0.75); text-align: center;">
-              {{- card_collection.description | strip_html | truncatewords: 12 -}}
-              <span class="icon-wrap">
-                {{- 'icon-arrow.svg' | inline_asset_content -}}
-              </span>
-            </p>
-          {%- endif -%}
+            </h3>
+          </div>
         </div>
-      </div>
-    {%- endif -%}
-    {%- if card_collection == blank -%}
-      <div class="card__content" style="text-align: center;">
-        <div class="card__information" style="text-align: center;">
-          <h3 class="card__heading card__heading--placeholder" style="text-align: center;">
-            <a role="link" aria-disabled="true" class="full-unstyled-link" style="display: inline-flex; align-items: center; justify-content: center;">
-              {{ 'onboarding.collection_title' | t }}
-              <span class="icon-wrap" style="margin-left: 6px;">
-                {{- 'icon-arrow.svg' | inline_asset_content -}}
-              </span>
-            </a>
-          </h3>
-        </div>
-      </div>
-    {%- endif -%}
-  </div>
+      {%- endif -%}
+    </div>
+  </a>
 </div>
 {%- endunless -%}
 
