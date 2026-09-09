@@ -221,6 +221,26 @@
             </h3>
             <div class="card-information" style="text-align: center; width: 100%; margin-top: auto; padding: 0; display: flex; flex-direction: column; align-items: center;">
               {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+              {%- unless card_product.has_only_default_variant -%}
+                <div class="card-product__variants-list" style="margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; align-items: center;">
+                  {%- for variant in card_product.variants limit: 4 -%}
+                    <a
+                      href="{{ variant.url }}"
+                      class="card-product__variant-pill"
+                      style="font-size: 0.95rem; font-weight: 600; padding: 2px 7px; border-radius: 8px; background: #f3f3f5; color: #2e2a39; text-decoration: none; display: inline-block; border: 1px solid #e0e0e0; transition: all 0.2s ease;"
+                      onmouseover="this.style.background='#9b046f'; this.style.color='#ffffff'; this.style.borderColor='#9b046f';"
+                      onmouseout="this.style.background='#f3f3f5'; this.style.color='#2e2a39'; this.style.borderColor='#e0e0e0';"
+                    >
+                      {{ variant.title | escape }}
+                    </a>
+                  {%- endfor -%}
+                  {%- if card_product.variants.size > 4 -%}
+                    <span style="font-size: 0.9rem; color: #777; font-weight: 500;">
+                      +{{ card_product.variants.size | minus: 4 }} more
+                    </span>
+                  {%- endif -%}
+                </div>
+              {%- endunless -%}
 <!-- Start of Judge.me code -->
       <div style='{{ jm_style }}' class='jdgm-widget jdgm-preview-badge' data-id='{{ card_product.id }}' data-auto-install='false'>
         {{ card_product.metafields.judgeme.badge }}

@@ -162,6 +162,30 @@
                         {%- if settings.predictive_search_show_price -%}
                           {% render 'price', product: product, use_variant: true, show_badges: false %}
                         {%- endif -%}
+                        {%- unless product.has_only_default_variant -%}
+                          <div class="predictive-search__item-variants" style="margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                            <span class="caption" style="font-size: 1.1rem; color: #9b046f; font-weight: 600;">
+                              Variants:
+                            </span>
+                            {%- for variant in product.variants limit: 5 -%}
+                              <a
+                                href="{{ variant.url }}"
+                                class="predictive-search__variant-pill"
+                                style="font-size: 1.05rem; font-weight: 500; padding: 2px 7px; border-radius: 10px; background: rgba(155, 4, 111, 0.08); color: #2e2a39; text-decoration: none; display: inline-flex; align-items: center; border: 1px solid rgba(155, 4, 111, 0.2); transition: all 0.2s ease;"
+                                onmouseover="this.style.background='#9b046f'; this.style.color='#ffffff';"
+                                onmouseout="this.style.background='rgba(155, 4, 111, 0.08)'; this.style.color='#2e2a39';"
+                                onclick="event.stopPropagation();"
+                              >
+                                {{- variant.title | escape -}}
+                              </a>
+                            {%- endfor -%}
+                            {%- if product.variants.size > 5 -%}
+                              <span class="caption" style="font-size: 1rem; color: #666;">
+                                +{{ product.variants.size | minus: 5 }} more
+                              </span>
+                            {%- endif -%}
+                          </div>
+                        {%- endunless -%}
                       </div>
                     </a>
                   </product-component>
